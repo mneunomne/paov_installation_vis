@@ -3,6 +3,8 @@ import oscP5.*;
 
 import java.net.URLEncoder;
 
+PShader blur;
+
 OscP5 oscP5;
 
 int numSpeakers = 25;
@@ -12,9 +14,11 @@ ArrayList<Speaker> speakers = new ArrayList<Speaker>();
 JSONArray audios;
 
 void setup() {
-  size(800, 800);
+  size(800, 800, P2D);
 
   stroke(255);
+  
+  blur = loadShader("blur.glsl"); 
   
   PFont f = createFont("Courier New",40,true);
   textFont(f);
@@ -45,8 +49,10 @@ void loadJSON() {
 }
 
 void draw() {
-  background(0, 10);
+  // background(0, 10);
   // filter(BLUR, 1);
+  
+  filter(blur);
   strokeWeight(1);
   stroke(255);
   noFill();
@@ -121,5 +127,11 @@ void oscEvent(OscMessage theOscMessage) {
     speakers.get(index).hide();
     return;
   }
+}
 
+void keyPressed () {
+ if (key == 'k') {
+   background(0);
+  blur = loadShader("blur.glsl"); 
+ }
 }
