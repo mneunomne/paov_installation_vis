@@ -1,6 +1,6 @@
 // Noise Walker
 class Speaker {
-  int id;
+  long id;
   float posX = 0;
   float posY = 0;
   boolean loaded = false;
@@ -13,47 +13,29 @@ class Speaker {
   float curTheta;
   float curRadius; 
   float theta, radius; 
-  Speaker (int _index, int _id) {
+  Speaker (int _index, long _id) {
     id = _id;
     index = _index;
   }
   
   void display () {
-    pushMatrix();
     if (!loaded) return;
+    offscreen.pushMatrix();
     posX = posX + (curPosX - posX) * 0.1;
     posY = posY + (curPosY - posY) * 0.1;
     
     theta = theta + (curTheta - theta) * 0.1;
     radius = radius + (curRadius - radius) * 0.1;
-    /*
-    pushMatrix();
-      strokeWeight(1);
-      translate(width/2, height/2);
-      translate(posX, posY);
-      point(0, 0);
-      float a = atan2(posY, posX);
-      // rotate(90);
-      rotate(a);
-      rotate(PI / 2);
-      // rect(-40, -10, 80, 20);
-      if (showWord) {
-        drawCharacters(curWord);
-        translate(-curWordWidth/2, 0);
-        text(curWord, 0, 0);
-      }
-    popMatrix();
-    */
     // drawCharacters("tesettese");
-    
+     // point(posX, posY);
+     offscreen.translate(width/2, height/2);
+     offscreen.point(posX, posY);
      if (showWord) {
         drawCharacters(curWord);
-        translate(width/2, height/2);
-        point(posX, posY);
         // translate(-curWordWidth/2, 0);
         // text(curWord, 0, 0);
       }
-    popMatrix();
+    offscreen.popMatrix();
   }
   
   void drawCharacters (String word) {
@@ -70,16 +52,16 @@ class Speaker {
       
       float angle = theta + arclength / radius;    
   
-      pushMatrix();
-      translate(width/2, height/2);
+      offscreen.pushMatrix();
+      // translate(width/2, height/2);
       // Polar to cartesian coordinate conversion
-      translate(radius*cos(angle), radius*sin(angle));
+      offscreen.translate(radius*cos(angle), radius*sin(angle));
       // Rotate the box
-      rotate(angle+PI/2); // rotation is offset by 90 degrees
+      offscreen.rotate(angle+PI/2); // rotation is offset by 90 degrees
       // Display the character
-      fill(255);
-      text(currentChar,0,0);
-      popMatrix();
+      offscreen.fill(255);
+      offscreen.text(currentChar,0,0);
+      offscreen.popMatrix();
       // Move halfway again
       arclength += w/2;
     }
@@ -101,7 +83,6 @@ class Speaker {
   
   void appear (String word) {
     if (word == null) return;
-    println("appear word", word, Character.isJavaIdentifierPart(word.charAt(0)));
     showWord = true;
     curWord = word;
     curWordWidth = textWidth(curWord);

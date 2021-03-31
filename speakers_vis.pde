@@ -1,3 +1,12 @@
+import deadpixel.keystone.*;
+
+
+Keystone ks;
+CornerPinSurface surface;
+
+PGraphics offscreen;
+PFont font;
+
 import netP5.*;
 import oscP5.*;
 
@@ -14,24 +23,20 @@ ArrayList<Speaker> speakers = new ArrayList<Speaker>();
 JSONArray audios;
 
 void setup() {
-  size(800, 800, P2D);
-
-  stroke(255);
+  size(displayWidth, displayHeight, P3D);
   
+  ks = new Keystone(this);
+  surface = ks.createCornerPinSurface(width, height, 20);
+  offscreen = createGraphics(width, height, P3D);
   blur = loadShader("blur.glsl"); 
   
-  PFont f = createFont("Courier New",40,true);
-  textFont(f);
-  textSize(18);
-  
-  oscP5 = new OscP5(this,32000);
-  
-  ellipseMode(RADIUS);
-  // textAlign(CENTER);
-  
+  font = createFont("Courier New",40,true);
+  offscreen.textFont(font);
+
+   
+  oscP5 = new OscP5(this, 32000);
+ 
   loadJSON();
-  background(0);
-  smooth();
 }
 
 
@@ -42,7 +47,7 @@ void loadJSON() {
   JSONArray participants = json.getJSONArray("speakers");
   for (int i = 0; i < participants.size(); i++) {    
     JSONObject item = participants.getJSONObject(i); 
-    int id = item.getInt("id");    
+    long id = item.getLong("id");    
     Speaker n = new Speaker(i, id);
     speakers.add(n);
   }
@@ -52,18 +57,31 @@ void draw() {
   // background(0, 10);
   // filter(BLUR, 1);
   
-  filter(blur);
-  strokeWeight(1);
-  stroke(255);
-  noFill();
-  // ellipse(width/2, height/2, height/2,height/2);
-  stroke(255);
+  offscreen.beginDraw();
+  offscreen.textSize(18);
+  offscreen.ellipseMode(RADIUS);
+  // offscreen.background(0);
+  offscreen.smooth();
+  offscreen.filter(blur);
+  offscreen.fill(0,67);
+  offscreen.rect(-10, -10, width + 20, height + 20);
+  // filter(THRESHOLD);
+  offscreen.strokeWeight(1);
+  offscreen.stroke(255);
+  offscreen.noFill();
+  offscreen.ellipse(width/2, height/2, height/2,height/2);
+  offscreen.stroke(255);
   for(int i = 0; i < speakers.size(); i++) {
     speakers.get(i).display();
   }
+  offscreen.endDraw();
+  
+  background(0);
+  
+  surface.render(offscreen);
 }
 
-int getSpeakerIndexFromId (int _id) {
+int getSpeakerIndexFromId (long _id) {
   int index = 0;
   for(int i = 0; i < numSpeakers; i++) {
     if (_id == speakers.get(i).id) {
@@ -105,23 +123,24 @@ void oscEvent(OscMessage theOscMessage) {
 
   
   if (theOscMessage.checkAddrPattern("/play")==true) {
-    int speaker_id = theOscMessage.get(0).intValue();
+    String speaker_id = theOscMessage.get(0).stringValue();
+    
     int audio_id = theOscMessage.get(1).intValue();
     // String word = URLDecoder.decode(theOscMessage.get(2).stringValue());
     String word = getAudioTextFromId(audio_id);
     // get speaker index
-    int index = getSpeakerIndexFromId(speaker_id);
+    int index = getSpeakerIndexFromId(Long.parseLong(speaker_id));
     // show word
-    println("word: ", word);
+    println("speaker_id: ", speaker_id);
     speakers.get(index).appear(word);
     return;
   }
   
   if (theOscMessage.checkAddrPattern("/end")==true) {
-    int speaker_id = theOscMessage.get(0).intValue();  
+    String speaker_id = theOscMessage.get(0).stringValue();  
     int audio_id = theOscMessage.get(1).intValue();
     // get speaker index
-    int index = getSpeakerIndexFromId(speaker_id);
+    int index = getSpeakerIndexFromId(Long.parseLong(speaker_id));
     // hide word
     println("end", index);
     speakers.get(index).hide();
@@ -130,8 +149,25 @@ void oscEvent(OscMessage theOscMessage) {
 }
 
 void keyPressed () {
- if (key == 'k') {
-   background(0);
-  blur = loadShader("blur.glsl"); 
- }
+ switch(key) {
+  case 'c':
+    // enter/leave calibration mode, where surfaces can be warped 
+    // and moved
+    ks.toggleCalibration();
+    break;
+
+  case 'l':
+    // loads the saved layout
+    ks.load();
+    break;
+
+  case 's':
+    // saves the layout
+    ks.save();
+    break;
+  case 'r':
+    background(0);
+    blur = loadShader("blur.glsl"); 
+    break;
+  }
 }
