@@ -28,12 +28,14 @@ class Speaker {
     radius = radius + (curRadius - radius) * 0.1;
     // drawCharacters("tesettese");
      // point(posX, posY);
-     offscreen.translate(width/2, height/2);
-     offscreen.point(posX, posY);
+     offscreen.strokeWeight(2);
+     offscreen.translate(offscreen.width/2, offscreen.height/2);
      if (showWord) {
         drawCharacters(curWord);
         // translate(-curWordWidth/2, 0);
         // text(curWord, 0, 0);
+      } else {
+        offscreen.point(posX, posY);
       }
     offscreen.popMatrix();
   }
@@ -45,7 +47,7 @@ class Speaker {
     {
       // Instead of a constant width, we check the width of each character.
       char currentChar = word.charAt(i);
-      float w = textWidth(currentChar);
+      float w = offscreen.textWidth(currentChar);
   
       // Each box is centered so we move half the width
       arclength += w/2;
