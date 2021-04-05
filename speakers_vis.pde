@@ -19,7 +19,7 @@ OscP5 oscP5;
 int numSpeakers = 25;
 ArrayList<Speaker> speakers = new ArrayList<Speaker>();
 
-float blurAmount = 65;
+float blurAmount = 60;
  
 JSONArray audios;
 
@@ -31,15 +31,18 @@ void setup() {
   offscreen = createGraphics(height, height, P3D);
   blur = loadShader("blur.glsl"); 
   
-  font = createFont("Courier New",40,true);
+  font = createFont("Courier New",18,true);
+  
+  offscreen.beginDraw();
+  offscreen.textSize(18);
   offscreen.textFont(font);
-
+  offscreen.endDraw();
    
   oscP5 = new OscP5(this, 32000);
  
   loadJSON();
   
-  ks.load();
+  // ks.load();
 }
 
 
@@ -62,7 +65,6 @@ void draw() {
   // filter(BLUR, 1);
   
   offscreen.beginDraw();
-  offscreen.textSize(18);
   offscreen.ellipseMode(RADIUS);
   // offscreen.background(0);
   offscreen.smooth();
@@ -175,12 +177,10 @@ void keyPressed () {
     // and moved
     ks.toggleCalibration();
     break;
-
   case 'l':
     // loads the saved layout
     ks.load();
     break;
-
   case 's':
     // saves the layout
     ks.save();
